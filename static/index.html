@@ -3,222 +3,200 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Static Draw — 1v1</title>
+<title>Static Draw — Minimal 1v1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bungee&family=VT323&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg:#050507; --panel:#0c0c12; --panel2:#0a0a0f; --line:#2a2a38;
-    --pink:#ff2fd6; --cyan:#46e0ff; --amber:#ffb703; --green:#39ff88; --warn:#ffd23f;
-    --text:#e9e9f2; --canvas-bg:#f6f1e0;
-  }
-  *{ box-sizing:border-box; }
-  html,body{ margin:0; height:100%; background:var(--bg); color:var(--text);
-    font-family:'Courier New', ui-monospace, monospace; overflow:hidden; }
-  body{
-    background-image:
-      repeating-linear-gradient(0deg, rgba(57,255,136,0.035) 0px, rgba(57,255,136,0.035) 1px, transparent 1px, transparent 3px);
-  }
-
-  /* ---- global chrome (present on every screen) ---- */
-  #topbar{
-    position:fixed; top:0; left:0; right:0; height:52px; z-index:40;
-    display:flex; align-items:center; justify-content:space-between;
-    padding:0 18px; background:var(--panel); border-bottom:2px solid var(--green);
-    box-shadow:0 0 14px rgba(57,255,136,0.25);
-  }
-  #topbar .logo{ font-family:'Bungee', 'Courier New', monospace; font-weight:normal;
-    letter-spacing:1px; font-size:17px; white-space:nowrap; color:var(--pink);
-    text-shadow:0 0 6px var(--pink), 0 0 16px rgba(255,47,214,0.6); }
-  #topbar .logo span{ color:var(--cyan); text-shadow:0 0 6px var(--cyan), 0 0 16px rgba(70,224,255,0.6); }
-  #topbar .meta{ display:flex; gap:16px; align-items:center; font-size:12px; color:var(--amber); letter-spacing:0.5px; }
-  #topbar .meta b{ color:var(--text); font-weight:bold; font-family:'VT323', monospace; font-size:15px; }
-  #timerVal.warn{ color:var(--warn); text-shadow:0 0 8px var(--warn); }
-  #timerVal.hot{ color:var(--pink); text-shadow:0 0 8px var(--pink); }
-
-  #bottombar{
-    position:fixed; bottom:0; left:0; right:0; height:28px; z-index:40;
-    display:flex; align-items:center; justify-content:center;
-    background:var(--panel); border-top:2px solid var(--green);
-    box-shadow:0 0 14px rgba(57,255,136,0.25);
-    font-size:11px; color:var(--cyan); letter-spacing:0.6px;
+  :root {
+    --bg: #f4f5f8;
+    --panel: #ffffff;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --muted: #64748b;
+    --primary: #6366f1;
+    --primary-hover: #4f46e5;
+    --canvas-bg: #ffffff;
+    --radius: 12px;
   }
 
-  .screen{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
-    flex-direction:column; text-align:center; padding:76px 24px 46px; overflow:auto; }
-
-  h1.title{
-    font-family:'Bungee', 'Courier New', monospace; font-weight:normal;
-    font-size:clamp(32px,7vw,64px); margin:0 0 10px; letter-spacing:2px;
-    animation: neonCycle 6s linear infinite, neonFlicker 4.1s steps(1) infinite;
-  }
-  h1.title span{ }
-  @keyframes neonCycle{
-    0%,100%{ color:var(--pink); text-shadow:0 0 6px var(--pink), 0 0 18px var(--pink), 0 0 34px rgba(255,47,214,0.8); }
-    25%{ color:var(--cyan); text-shadow:0 0 6px var(--cyan), 0 0 18px var(--cyan), 0 0 34px rgba(70,224,255,0.8); }
-    50%{ color:var(--amber); text-shadow:0 0 6px var(--amber), 0 0 18px var(--amber), 0 0 34px rgba(255,183,3,0.8); }
-    75%{ color:var(--green); text-shadow:0 0 6px var(--green), 0 0 18px var(--green), 0 0 34px rgba(57,255,136,0.8); }
-  }
-  @keyframes neonFlicker{
-    0%,3%,6%,100%{ opacity:1; }
-    4%{ opacity:.45; }
-    7%{ opacity:.9; }
-    52%{ opacity:1; }
-    53%{ opacity:.65; }
-    55%{ opacity:1; }
-  }
-  p.tag{ color:var(--cyan); letter-spacing:3px; font-size:13px; margin:0 0 26px; text-transform:uppercase; }
-  p.sub{ color:#9a9ab0; max-width:460px; line-height:1.6; font-size:13px; margin:0 0 20px;}
-
-  .panel{
-    background:rgba(10,10,15,0.88); border:2px solid var(--green); border-radius:14px;
-    box-shadow:0 0 18px rgba(57,255,136,0.25), inset 0 0 24px rgba(57,255,136,0.04);
-    padding:30px 36px; width:min(92vw,440px);
-  }
-  .field{ text-align:left; margin-bottom:18px; }
-  .field label{ display:block; color:var(--amber); font-size:12px; letter-spacing:1.5px;
-    margin-bottom:8px; text-transform:uppercase; }
-
-  input[type=text]{
-    font-family:inherit; font-size:18px; padding:12px 14px; text-align:center;
-    background:#000; border:1px solid var(--green); border-radius:6px; color:var(--text);
-    letter-spacing:2px; text-transform:uppercase; width:100%;
-  }
-  input[type=text]::placeholder{ color:#4a5a4f; }
-
-  #instructionsBox{
-    border:1px solid var(--line); border-radius:6px; background:#000;
-    padding:10px 16px; margin:0;
-  }
-  #instructionsBox li{ color:var(--green); font-size:13px; line-height:1.9; text-align:left; }
-
-  button{
-    font-family:inherit; font-size:15px; padding:12px 26px; background:transparent;
-    color:var(--pink); border:2px solid var(--pink); border-radius:8px; cursor:pointer;
-    font-weight:bold; letter-spacing:1px; text-shadow:0 0 6px rgba(255,47,214,0.7);
-    box-shadow:0 0 10px rgba(255,47,214,0.25);
-  }
-  button:hover{ background:rgba(255,47,214,0.12); }
-  button:disabled{ color:#555; border-color:#444; box-shadow:none; text-shadow:none; cursor:default; }
-  #joinBtn{ width:100%; margin-top:4px; }
-  .hidden{ display:none !important; }
-  #status{ color:var(--amber); font-size:12px; margin-top:14px; min-height:18px;}
-
-  /* ---- in-match toolbar ---- */
-  #toolbar{
-    position:fixed; top:52px; left:0; right:0; height:52px; z-index:39;
-    display:flex; align-items:center; gap:10px; padding:0 18px;
-    background:var(--panel2); border-bottom:2px solid var(--line);
-  }
-  #toolbar .tbLabel{ font-size:11px; color:var(--amber); margin-right:2px; letter-spacing:1px; }
-  .swatch{
-    width:26px; height:26px; border-radius:50%; padding:0; cursor:pointer;
-    border:2px solid var(--line); background:#000; box-shadow:none;
-  }
-  .swatch.active{ border-color:var(--cyan); box-shadow:0 0 0 2px var(--panel2), 0 0 8px var(--cyan); }
-  #eraserBtn{
-    font-size:11px; padding:8px 14px; background:var(--panel); color:var(--text);
-    border:1px solid var(--line); border-radius:6px; font-weight:normal; letter-spacing:0.5px;
-    text-shadow:none; box-shadow:none;
-  }
-  #eraserBtn.active{ background:var(--cyan); color:#0a0a0f; font-weight:bold; border-color:var(--cyan); }
-  .tbDivider{ width:1px; height:22px; background:var(--line); margin:0 4px; }
-
-  /* ---- canvas area ---- */
-  #canvasWrap{ position:fixed; left:0; right:0; top:104px; bottom:28px; }
-  canvas#draw{ position:absolute; inset:0; background:var(--canvas-bg); cursor:none; display:block; }
-  canvas#cursorLayer{ position:absolute; inset:0; pointer-events:none; }
-  #clearHint{
-    position:absolute; right:14px; bottom:10px; font-size:11px; letter-spacing:0.5px;
-    color:rgba(10,10,15,0.55); background:rgba(255,255,255,0.35); padding:4px 9px;
-    border-radius:4px; pointer-events:none;
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    overflow: hidden;
   }
 
-  #freezeOverlay{
-    position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex;
-    align-items:center; justify-content:center; font-size:32px; font-weight:bold;
-    z-index:41; letter-spacing:1px; color:var(--pink); text-shadow:0 0 12px var(--pink);
-    font-family:'Bungee','Courier New',monospace;
+  /* ---- Header Navigation ---- */
+  #topbar {
+    position: fixed; top: 0; left: 0; right: 0; height: 56px; z-index: 40;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; background: var(--panel); border-bottom: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  #topbar .logo {
+    font-weight: 800; font-size: 18px; letter-spacing: -0.5px; color: var(--text);
+  }
+  #topbar .logo span { color: var(--primary); }
+  #topbar .meta {
+    display: flex; gap: 20px; align-items: center; font-size: 13px; color: var(--muted); font-weight: 500;
+  }
+  #topbar .meta b { color: var(--text); font-weight: 700; }
+  #timerVal { font-weight: 800; color: var(--primary); }
+  #timerVal.warn { color: #f59e0b; }
+  #timerVal.hot { color: #ef4444; }
+
+  .screen {
+    position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+    flex-direction: column; text-align: center; padding: 76px 24px 24px; overflow: auto;
   }
 
-  .revealGrid{ display:flex; gap:26px; flex-wrap:wrap; align-items:flex-start; justify-content:center; }
-  .revealCard{ background:var(--panel); border:2px solid var(--green); border-radius:10px; padding:12px;
-    box-shadow:0 0 14px rgba(57,255,136,0.2); }
-  .revealCard img{ width:min(42vw,420px); display:block; background:var(--canvas-bg); border-radius:4px; }
-  .revealCard .who{ margin-top:8px; font-size:13px; color:var(--cyan); letter-spacing:1px; }
+  /* ---- Lobby UI ---- */
+  h1.title {
+    font-weight: 800; font-size: clamp(32px, 5vw, 48px); margin: 0 0 6px;
+    letter-spacing: -1px; color: var(--text);
+  }
+  p.tag { color: var(--muted); font-size: 14px; font-weight: 500; margin: 0 0 28px; }
 
-  small.foot{ display:block; margin-top:16px; color:#55556a; font-size:11px; }
+  .panel {
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.01);
+    padding: 32px; width: min(92vw, 380px);
+  }
+  .field { text-align: left; margin-bottom: 20px; }
+  .field label {
+    display: block; color: var(--text); font-size: 12px; font-weight: 700;
+    margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+
+  input[type=text] {
+    font-family: inherit; font-size: 16px; font-weight: 700; padding: 12px 16px;
+    text-align: center; background: #f8fafc; border: 1.5px solid var(--border);
+    border-radius: 8px; color: var(--text); letter-spacing: 2px; text-transform: uppercase;
+    width: 100%; outline: none; transition: all 0.15s ease;
+  }
+  input[type=text]:focus {
+    border-color: var(--primary); background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  }
+
+  button.btn-primary {
+    width: 100%; font-family: inherit; font-size: 14px; font-weight: 700;
+    padding: 12px 20px; background: var(--primary); color: #ffffff;
+    border: none; border-radius: 8px; cursor: pointer; transition: all 0.15s ease;
+    box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
+  }
+  button.btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+  button.btn-primary:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; box-shadow: none; }
+  
+  .hidden { display: none !important; }
+  #status { color: var(--muted); font-size: 13px; font-weight: 500; margin-top: 14px; min-height: 18px; }
+
+  /* ---- Paint Toolbar ---- */
+  #toolbar {
+    position: fixed; top: 56px; left: 0; right: 0; height: 52px; z-index: 39;
+    display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0 18px;
+    background: var(--panel); border-bottom: 1px solid var(--border);
+  }
+  .swatch {
+    width: 28px; height: 28px; border-radius: 50%; padding: 0; cursor: pointer;
+    border: 2px solid transparent; transition: transform 0.1s ease, border-color 0.15s ease;
+  }
+  .swatch:hover { transform: scale(1.1); }
+  .swatch.active { border-color: var(--text); transform: scale(1.15); }
+
+  #eraserBtn {
+    font-family: inherit; font-size: 12px; font-weight: 700; padding: 6px 14px;
+    background: #f1f5f9; color: var(--text); border: 1px solid var(--border);
+    border-radius: 6px; cursor: pointer; transition: all 0.15s ease;
+  }
+  #eraserBtn:hover { background: #e2e8f0; }
+  #eraserBtn.active { background: var(--text); color: #ffffff; border-color: var(--text); }
+  .tbDivider { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+
+  /* ---- Canvas Container ---- */
+  #canvasWrap { position: fixed; left: 0; right: 0; top: 108px; bottom: 0; background: var(--bg); }
+  canvas#draw { position: absolute; inset: 0; background: var(--canvas-bg); cursor: crosshair; display: block; }
+  
+  #clearHint {
+    position: absolute; right: 16px; bottom: 16px; font-size: 11px; font-weight: 700;
+    color: var(--muted); background: rgba(255,255,255,0.85); backdrop-filter: blur(4px);
+    padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); pointer-events: none;
+  }
+
+  #freezeOverlay {
+    position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800;
+    z-index: 41; color: #ffffff;
+  }
+
+  /* ---- Reveal Grid ---- */
+  .revealGrid { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; justify-content: center; margin-top: 10px; }
+  .revealCard {
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+  }
+  .revealCard img { width: min(42vw, 400px); display: block; background: var(--canvas-bg); border-radius: 8px; border: 1px solid var(--border); }
+  .revealCard .who { margin-top: 10px; font-size: 13px; font-weight: 700; color: var(--text); }
+
+  small.foot { display: block; margin-top: 24px; color: var(--muted); font-size: 12px; }
 </style>
 </head>
 <body>
 
-<!-- GLOBAL HEADER / FOOTER (all screens) -->
+<!-- HEADER -->
 <div id="topbar">
   <div class="logo">STATIC <span>DRAW</span></div>
   <div class="meta">
-    <span id="roomMeta">room: <b>—</b></span>
-    <span id="roleMeta">you: <b>—</b></span>
-    <span id="timerWrap" class="hidden">time: <b id="timerVal">60</b></span>
+    <span id="roomMeta">Room: <b>—</b></span>
+    <span id="roleMeta">You: <b>—</b></span>
+    <span id="timerWrap" class="hidden">Time: <b id="timerVal">60</b>s</span>
   </div>
 </div>
-<div id="bottombar">// A SYNCED-CHAOS DRAWING DUEL // THE SAME RANDOMNESS HITS BOTH OF YOU //</div>
 
 <!-- IN-MATCH TOOLBAR -->
 <div id="toolbar" class="hidden">
-  <span class="tbLabel">INK</span>
-  <button class="swatch active" data-color="#000000" style="background:#000000" title="black"></button>
-  <button class="swatch" data-color="#dc2626" style="background:#dc2626" title="red"></button>
-  <button class="swatch" data-color="#1d4ed8" style="background:#1d4ed8" title="blue"></button>
-  <button class="swatch" data-color="#16a34a" style="background:#16a34a" title="green"></button>
-  <button class="swatch" data-color="#f59e0b" style="background:#f59e0b" title="yellow"></button>
+  <button class="swatch active" data-color="#1e293b" style="background:#1e293b" title="Black"></button>
+  <button class="swatch" data-color="#ef4444" style="background:#ef4444" title="Red"></button>
+  <button class="swatch" data-color="#3b82f6" style="background:#3b82f6" title="Blue"></button>
+  <button class="swatch" data-color="#22c55e" style="background:#22c55e" title="Green"></button>
+  <button class="swatch" data-color="#eab308" style="background:#eab308" title="Yellow"></button>
+  <button class="swatch" data-color="#a855f7" style="background:#a855f7" title="Purple"></button>
   <div class="tbDivider"></div>
   <button id="eraserBtn">ERASER</button>
 </div>
 
-<!-- LOBBY -->
+<!-- CLEAN LOBBY -->
 <div id="lobby" class="screen">
-  <h1 class="title">STATIC <span>DRAW</span></h1>
-  <p class="tag">// synced chaos sketch duel // 1 vs 1 //</p>
-  <p class="sub">Enter a room code and share it with your opponent. Both of you type the same code — the match starts the instant you're both in. You'll be told what to draw offline. One minute on the clock, chaos synced and fair for both of you.</p>
+  <h1 class="title">Static Draw</h1>
+  <p class="tag">1v1 Synced Canvas Duel</p>
 
   <div class="panel">
     <div class="field">
       <label>Room Code</label>
-      <input id="roomInput" type="text" maxlength="8" placeholder="e.g. ABCD">
+      <input id="roomInput" type="text" maxlength="8" placeholder="e.g. ROOM1">
     </div>
-    <div class="field">
-      <label>How To Play</label>
-      <ol id="instructionsBox">
-        <li>Enter or create a room code with a friend.</li>
-        <li>Once both join, a 60s drawing match begins.</li>
-        <li>Mouse sensitivity fluctuates unpredictably for both of you at the same time.</li>
-        <li>Draw the agreed prompt before time runs out!</li>
-      </ol>
-    </div>
-    <button id="joinBtn">JOIN ROOM ▶</button>
+    <button id="joinBtn" class="btn-primary">Join Room</button>
     <div id="status"></div>
   </div>
-  <small class="foot">Left click + hold to draw. Press C to wipe your whole canvas. Pointer lock required — click the canvas once the match starts.</small>
 </div>
 
 <!-- GAME -->
 <div id="game" class="screen hidden" style="padding:0;">
   <div id="canvasWrap">
     <canvas id="draw"></canvas>
-    <canvas id="cursorLayer"></canvas>
-    <div id="clearHint" class="hidden">[C] WIPES YOUR WHOLE CANVAS</div>
+    <div id="clearHint">[C] Clear Canvas</div>
   </div>
-  <div id="freezeOverlay" class="hidden">TIME'S UP — SUBMITTING...</div>
+  <div id="freezeOverlay" class="hidden">TIME'S UP! SUBMITTING...</div>
 </div>
 
 <!-- REVEAL -->
 <div id="reveal" class="screen hidden">
-  <h1 class="title">RE<span>VEAL</span></h1>
+  <h1 class="title">Match Results</h1>
   <div class="revealGrid">
-    <div class="revealCard"><img id="p1img"><div class="who">PLAYER 1</div></div>
-    <div class="revealCard"><img id="p2img"><div class="who">PLAYER 2</div></div>
+    <div class="revealCard"><img id="p1img"><div class="who">Player 1</div></div>
+    <div class="revealCard"><img id="p2img"><div class="who">Player 2</div></div>
   </div>
-  <small class="foot">Refresh and rejoin the same room code to play another round.</small>
+  <small class="foot">Refresh the page to play another round.</small>
 </div>
 
 <script>
@@ -237,10 +215,7 @@
   const canvasWrap = document.getElementById('canvasWrap');
   const canvas = document.getElementById('draw');
   const ctx = canvas.getContext('2d');
-  const cursorCanvas = document.getElementById('cursorLayer');
-  const cctx = cursorCanvas.getContext('2d');
   const freezeOverlay = document.getElementById('freezeOverlay');
-  const clearHint = document.getElementById('clearHint');
 
   let ws = null;
   let myRole = null;
@@ -249,13 +224,12 @@
   let schedule = null;
   const TOTAL_MS = 60000;
 
-  // ---- ink / eraser state ----
-  let currentColor = '#000000';
+  // ---- Ink / Eraser State ----
+  let currentColor = '#1e293b';
   let eraserActive = false;
   const BRUSH_SIZE = 4;
-  const ERASER_SIZE = 22;
-  const CANVAS_BG = '#f6f1e0';
-  const GRID_LINE = 'rgba(57,255,136,0.10)';
+  const ERASER_SIZE = 24;
+  const CANVAS_BG = '#ffffff';
 
   document.querySelectorAll('.swatch').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -266,52 +240,41 @@
       document.getElementById('eraserBtn').classList.remove('active');
     });
   });
+
   document.getElementById('eraserBtn').addEventListener('click', () => {
     eraserActive = !eraserActive;
     document.getElementById('eraserBtn').classList.toggle('active', eraserActive);
   });
 
-  function activeStrokeColor(){ return eraserActive ? CANVAS_BG : currentColor; }
-  function activeStrokeWidth(){ return eraserActive ? ERASER_SIZE : BRUSH_SIZE; }
+  function activeStrokeColor() { return eraserActive ? CANVAS_BG : currentColor; }
+  function activeStrokeWidth() { return eraserActive ? ERASER_SIZE : BRUSH_SIZE; }
 
-  // fills the canvas with the retro parchment tone + a faint graph-paper
-  // grid, so the theme reads as retro without hurting ink visibility
-  function paintCanvasBackground(){
+  function paintCanvasBackground() {
     ctx.fillStyle = CANVAS_BG;
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.strokeStyle = GRID_LINE;
-    ctx.lineWidth = 1;
-    const step = 40;
-    for(let x=0; x<=canvas.width; x+=step){
-      ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke();
-    }
-    for(let y=0; y<=canvas.height; y+=step){
-      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke();
-    }
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
-  function layoutCanvas(){
+  function layoutCanvas() {
     canvasWrap.style.top = toolbar.getBoundingClientRect().bottom + 'px';
   }
 
-  function resizeCanvas(preserve){
+  function resizeCanvas(preserve) {
     layoutCanvas();
     const w = canvasWrap.clientWidth, h = canvasWrap.clientHeight;
     let prev = null;
-    if(preserve && canvas.width > 0 && canvas.height > 0){
+    if (preserve && canvas.width > 0 && canvas.height > 0) {
       prev = document.createElement('canvas');
       prev.width = canvas.width; prev.height = canvas.height;
       prev.getContext('2d').drawImage(canvas, 0, 0);
     }
     canvas.width = w; canvas.height = h;
-    cursorCanvas.width = w; cursorCanvas.height = h;
     paintCanvasBackground();
-    if(prev) ctx.drawImage(prev, 0, 0);
+    if (prev) ctx.drawImage(prev, 0, 0);
   }
 
-  // ---- deterministic PRNG & schedule (identical on both clients given same seed) ----
-  function mulberry32(a){
-    return function(){
+  // ---- PRNG & Schedule ----
+  function mulberry32(a) {
+    return function() {
       a |= 0; a = a + 0x6D2B79F5 | 0;
       let t = Math.imul(a ^ a >>> 15, 1 | a);
       t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
@@ -319,22 +282,22 @@
     };
   }
 
-  function buildSchedule(seedVal, totalMs){
+  function buildSchedule(seedVal, totalMs) {
     const rng = mulberry32(seedVal >>> 0 || 1);
     const calmCount = 3;
     const calmDurs = [];
     let calmTotal = 0;
-    for(let i=0;i<calmCount;i++){ const d = 7000 + rng()*1000; calmDurs.push(d); calmTotal += d; }
+    for(let i=0; i<calmCount; i++){ const d = 7000 + rng()*1000; calmDurs.push(d); calmTotal += d; }
     const chaosCount = calmCount + 1;
     const chaosTotalMs = Math.max(1000, totalMs - calmTotal);
     const weights = [];
     let wsum = 0;
-    for(let i=0;i<chaosCount;i++){ const w = 0.5 + rng(); weights.push(w); wsum += w; }
+    for(let i=0; i<chaosCount; i++){ const w = 0.5 + rng(); weights.push(w); wsum += w; }
     const chaosDurs = weights.map(w => (w/wsum)*chaosTotalMs);
 
     const segments = [];
     let t = 0;
-    for(let i=0;i<chaosCount;i++){
+    for(let i=0; i<chaosCount; i++){
       segments.push({type:'chaos', start:t, end:t+chaosDurs[i]});
       t += chaosDurs[i];
       if(i < calmCount){
@@ -363,7 +326,7 @@
     return {segments, keyframes};
   }
 
-  function sensAt(kf, elapsedMs){
+  function sensAt(kf, elapsedMs) {
     if(elapsedMs <= 0) return kf[0].target;
     if(elapsedMs >= kf[kf.length-1].t) return kf[kf.length-1].target;
     const idx = Math.floor(elapsedMs/250);
@@ -372,21 +335,27 @@
     return a.target + (b.target - a.target)*frac;
   }
 
-  // ---- drawing state ----
+  // ---- Drawing State ----
   let cx = 0, cy = 0, drawing = false;
   let running = false, frozen = false;
   let matchStartPerf = null;
 
-  function onMouseMove(e){
-    if(!running || frozen) return;
+  function onMouseMove(e) {
+    if (!running || frozen) return;
     const elapsed = performance.now() - matchStartPerf;
     const sens = sensAt(schedule.keyframes, elapsed);
+
     const prevX = cx, prevY = cy;
-    cx += (e.movementX||0) * sens;
-    cy += (e.movementY||0) * sens;
+    
+    // Apply chaotic sensitivity multiplier to mouse movement deltas
+    cx += (e.movementX || 0) * sens;
+    cy += (e.movementY || 0) * sens;
+
+    // Clamp coordinates inside canvas boundary
     cx = Math.max(0, Math.min(canvas.width, cx));
     cy = Math.max(0, Math.min(canvas.height, cy));
-    if(drawing){
+
+    if (drawing) {
       ctx.beginPath();
       ctx.moveTo(prevX, prevY);
       ctx.lineTo(cx, cy);
@@ -397,100 +366,75 @@
     }
   }
 
-  function onMouseDown(){ if(running && !frozen) drawing = true; }
-  function onMouseUp(){ drawing = false; }
-  function onKey(e){
-    if(e.key.toLowerCase() === 'c' && running && !frozen){
+  function onMouseDown(e) {
+    if (running && !frozen) {
+      drawing = true;
+      const rect = canvas.getBoundingClientRect();
+      cx = e.clientX - rect.left;
+      cy = e.clientY - rect.top;
+    }
+  }
+
+  function onMouseUp() { drawing = false; }
+  
+  function onKey(e) {
+    if (e.key.toLowerCase() === 'c' && running && !frozen) {
       paintCanvasBackground();
     }
   }
 
-  // ---- custom crosshair (drawn on a separate transparent layer so it never
-  // gets baked into the actual painting) ----
-  function renderCursorFrame(){
-    cctx.clearRect(0,0,cursorCanvas.width,cursorCanvas.height);
-    if(running && !frozen){
-      const s = eraserActive ? 12 : 8;
-      cctx.strokeStyle = 'rgba(0,0,0,0.55)';
-      cctx.lineWidth = 1.5;
-      cctx.beginPath();
-      cctx.moveTo(cx-s, cy); cctx.lineTo(cx+s, cy);
-      cctx.moveTo(cx, cy-s); cctx.lineTo(cx, cy+s);
-      cctx.stroke();
-      cctx.beginPath();
-      cctx.arc(cx, cy, eraserActive ? 8 : 3, 0, Math.PI*2);
-      cctx.strokeStyle = '#000';
-      cctx.lineWidth = 1;
-      cctx.stroke();
-      if(!eraserActive){
-        cctx.fillStyle = currentColor;
-        cctx.beginPath();
-        cctx.arc(cx, cy, 3, 0, Math.PI*2);
-        cctx.fill();
-      }
-    }
-    requestAnimationFrame(renderCursorFrame);
-  }
-  requestAnimationFrame(renderCursorFrame);
-
-  function beginCountdownThenStart(){
+  function beginCountdownThenStart() {
     resizeCanvas(false);
-    cx = canvas.width/2; cy = canvas.height/2;
+    cx = canvas.width / 2; cy = canvas.height / 2;
     schedule = buildSchedule(seed, TOTAL_MS);
 
     toolbar.classList.remove('hidden');
     timerWrap.classList.remove('hidden');
-    clearHint.classList.remove('hidden');
     layoutCanvas();
     statusEl.textContent = '';
-    canvas.requestPointerLock && canvas.requestPointerLock();
 
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mousedown', onMouseDown);
-    document.addEventListener('mouseup', onMouseUp);
-    document.addEventListener('keydown', onKey);
-    canvas.addEventListener('click', () => { canvas.requestPointerLock && canvas.requestPointerLock(); });
+    canvas.addEventListener('mousemove', onMouseMove);
+    canvas.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('keydown', onKey);
 
-    function waitForStart(){
+    function waitForStart() {
       const now = Date.now();
       const msLeft = startAt - now;
-      if(msLeft <= 0){
+      if (msLeft <= 0) {
         matchStartPerf = performance.now();
         running = true;
         tick();
         return;
       }
-      timerVal.textContent = Math.ceil(msLeft/1000);
+      timerVal.textContent = Math.ceil(msLeft / 1000);
       requestAnimationFrame(waitForStart);
     }
     waitForStart();
   }
 
-  function tick(){
-    if(!running) return;
+  function tick() {
+    if (!running) return;
     const elapsed = performance.now() - matchStartPerf;
     const remaining = Math.max(0, TOTAL_MS - elapsed);
-    timerVal.textContent = Math.ceil(remaining/1000);
+    timerVal.textContent = Math.ceil(remaining / 1000);
     timerVal.className = remaining < 10000 ? 'hot' : (remaining < 20000 ? 'warn' : '');
 
-    if(elapsed >= TOTAL_MS){
+    if (elapsed >= TOTAL_MS) {
       freeze();
       return;
     }
     requestAnimationFrame(tick);
   }
 
-  function freeze(){
-    frozen = true;
-    running = false;
-    drawing = false;
-    document.exitPointerLock && document.exitPointerLock();
+  function freeze() {
+    frozen = true; running = false; drawing = false;
     freezeOverlay.classList.remove('hidden');
     const dataUrl = canvas.toDataURL('image/png');
-    ws.send(JSON.stringify({type:'final_image', image: dataUrl}));
+    ws.send(JSON.stringify({type: 'final_image', image: dataUrl}));
   }
 
-  function showReveal(p1img, p2img){
+  function showReveal(p1img, p2img) {
     gameScreen.classList.add('hidden');
     revealScreen.classList.remove('hidden');
     document.getElementById('p1img').src = p1img;
@@ -499,28 +443,28 @@
 
   joinBtn.addEventListener('click', () => {
     const code = roomInput.value.trim().toUpperCase();
-    if(!code){ statusEl.textContent = 'enter a room code first'; return; }
+    if (!code) { statusEl.textContent = 'Please enter a room code'; return; }
     joinBtn.disabled = true;
-    statusEl.textContent = 'connecting...';
+    statusEl.textContent = 'Connecting...';
     roomMeta.textContent = code;
 
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
     ws = new WebSocket(proto + '://' + location.host + '/ws?room=' + encodeURIComponent(code));
 
-    ws.onopen = () => { statusEl.textContent = 'connected, joining room...'; };
-    ws.onerror = () => { statusEl.textContent = 'connection error'; joinBtn.disabled = false; };
-    ws.onclose = () => { if(!running) statusEl.textContent = 'disconnected'; };
+    ws.onopen = () => { statusEl.textContent = 'Connected. Joining room...'; };
+    ws.onerror = () => { statusEl.textContent = 'Connection error'; joinBtn.disabled = false; };
+    ws.onclose = () => { if (!running) statusEl.textContent = 'Disconnected'; };
 
     ws.onmessage = (evt) => {
       const msg = JSON.parse(evt.data);
-      switch(msg.type){
+      switch (msg.type) {
         case 'joined':
           myRole = msg.role;
           roleMeta.textContent = msg.role.toUpperCase();
-          statusEl.textContent = 'you are ' + msg.role.toUpperCase();
+          statusEl.textContent = 'Joined as ' + msg.role.toUpperCase();
           break;
         case 'waiting':
-          statusEl.textContent = 'waiting for opponent to join room "' + code + '"...';
+          statusEl.textContent = 'Waiting for opponent to join "' + code + '"...';
           break;
         case 'start':
           seed = msg.seed;
@@ -533,18 +477,18 @@
           showReveal(msg.p1_image, msg.p2_image);
           break;
         case 'opponent_left':
-          statusEl.textContent = 'opponent disconnected';
+          statusEl.textContent = 'Opponent disconnected';
           alert('Your opponent disconnected.');
           break;
         case 'error':
-          statusEl.textContent = msg.reason || 'error';
+          statusEl.textContent = msg.reason || 'Error joining';
           joinBtn.disabled = false;
           break;
       }
     };
   });
 
-  addEventListener('resize', () => { if(running) resizeCanvas(true); else layoutCanvas(); });
+  window.addEventListener('resize', () => { if (running) resizeCanvas(true); else layoutCanvas(); });
 })();
 </script>
 </body>
